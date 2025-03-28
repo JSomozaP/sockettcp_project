@@ -1,60 +1,61 @@
 // server.c - un micro-serveur qui accepte une connexion client, attend un message, et y répond
-#include <errno.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <errno.h>  // errno
+#include <netdb.h>  // struct sockaddr_in
+#include <stdio.h>  // printf, fprintf
+#include <string.h>  // memset, strerror, strlen
+#include <sys/types.h> // socket, bind, listen, accept, recv, send
+#include <sys/socket.h>  // socket, bind, listen, accept, recv, send
+#include <netinet/in.h> // struct sockaddr_in
+#include <unistd.h>  // close
 
 #define PORT 4242  // le port de notre serveur
 #define BACKLOG 10 // nombre max de demandes de connexion
 
-int main(void)
+int main(void)  // pas besoin d'arguments pour notre serveur
 {
-    printf("---- SERVER ----\n\n");
-    struct sockaddr_in sa;
-    int socket_fd;
-    int client_fd;
-    int status;
-    struct sockaddr_storage client_addr;
-    socklen_t addr_size;
-    char buffer[BUFSIZ];
-    int bytes_read;
+    printf("---- SERVER ----\n\n");  // pour savoir qui est qui 
+    struct sockaddr_in sa;  // pour l'adresse et le port du serveur
+    int socket_fd;  // le file descriptor de la socket du serveur
+    int client_fd;  // le file descriptor de la socket du client
+    int status;  // pour les retours de fonctions
+    struct sockaddr_storage client_addr;  // pour l'adresse du client
+    socklen_t addr_size;  // pour la taille de l'adresse du client
+    char buffer[BUFSIZ];  // pour stocker les messages reçus
+    int bytes_read;  // pour le nombre de bytes reçus
 
     // on prépare l'adresse et le port pour la socket de notre serveur
-    memset(&sa, 0, sizeof sa);
+    memset(&sa, 0, sizeof sa);  // on met tout à zéro
     sa.sin_family = AF_INET; // IPv4
     sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK); // 127.0.0.1, localhost
-    sa.sin_port = htons(PORT);
+    sa.sin_port = htons(PORT); // le port sur lequel on écoute
 
     // on crée la socket, on a lit et on écoute dessus
-    socket_fd = socket(sa.sin_family, SOCK_STREAM, 0);
-    if (socket_fd == -1) {
-        fprintf(stderr, "socket fd error: %s\n", strerror(errno));
+    socket_fd = socket(sa.sin_family, SOCK_STREAM, 0);  // on crée la socket
+    if (socket_fd == -1) {  // si la création a échoué
+        fprintf(stderr, "socket fd error: %s\n", strerror(errno));  // on affiche l'erreur
         return (1);
     }
-    printf("Created server socket fd: %d\n", socket_fd);
+    printf("Created server socket fd: %d\n", socket_fd);  // on affiche le file descriptor de la socket
 
-    status = bind(socket_fd, (struct sockaddr *)&sa, sizeof sa);
-    if (status != 0) {
-        fprintf(stderr, "bind error: %s\n", strerror(errno));
+    status = bind(socket_fd, (struct sockaddr *)&sa, sizeof sa);  // on lie la socket à l'adresse et au port
+    if (status != 0) {  // si la liaison a échoué
+        fprintf(stderr, "bind error: %s\n", strerror(errno));  // on affiche l'erreur
         return (2);
     }
-    printf("Bound socket to localhost port %d\n", PORT);
+    printf("Bound socket to localhost port %d\n", PORT);  // on affiche le port auquel on est lié
 
-    printf("Listening on port %d\n", PORT);
-    status = listen(socket_fd, BACKLOG);
-    if (status != 0) {
-        fprintf(stderr, "listen error: %s\n", strerror(errno));
+    printf("Listening on port %d\n", PORT);  // on affiche qu'on écoute sur le port
+    status = listen(socket_fd, BACKLOG);  // on écoute sur la socket
+    if (status != 0) {  // si l'écoute a échoué
+        fprintf(stderr, "listen error: %s\n", strerror(errno));  // on affiche l'erreur
         return (3);
     }
 
     // on accepte une connexion entrante
-    addr_size = sizeof client_addr;
-    client_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &addr_size);
-    if (client_fd == -1) {
-        fprintf(stderr, "client fd error: %s\n", strerror(errno));
+    addr_size = sizeof client_addr; // on met la taille de l'adresse du client
+    client_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &addr_size); // on accepte la connexion
+    if (client_fd == -1) { // si l'acceptation a échoué
+        fprintf(stderr, "client fd error: %s\n", strerror(errno));  // on affiche l'erreur
         return (4);
     }
     printf("Accepted new connection on client socket fd: %d\n", client_fd);

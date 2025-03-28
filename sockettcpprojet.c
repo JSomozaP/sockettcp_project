@@ -6,8 +6,33 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 
 #define SERVER_PORT 3001
+#define buf_size 255
+
+
+
+/*
+ * Cette fonction nettoie le texte que tu écris
+ * Quand tu appuies sur "Entrée", ça ajoute un retour à la ligne
+ * Cette fonction enlève ce retour à la ligne pour que ce soit plus propre
+ * C'est comme effacer les petits débordements sur ta feuille !
+ */
+void noretour(char *str) // Fonction pour supprimer le retour à la ligne d'une chaîne
+{
+    size_t len = strlen(str); // On compte la longueur du texte
+    if (len > 0 && str[len - 1] == '\n')
+    {                        // Si le dernier caractère est un retour à la ligne
+        str[len - 1] = '\0'; // On le remplace par un marqueur de fin de texte
+    }
+}
+
+struct player  // Structure pour représenter le joueur
+{
+    int pv;             // Points de vie (0 = mort)
+    char nomjoueur[20]; // Ton nom d'aventurier (maximum 19 lettres)
+};
 
 // La réponse HTTP que nous allons envoyer
 // Elle contient :
@@ -25,7 +50,6 @@ const char *response =
     "<head><title>Mon serveur TCP</title></head>\n"
     "<body>\n"
     "<h1>Bienvenue Pouet !</h1>\n"
-    "<img src=\"https://unsplash.it/500/500\" >\n"
     "<p>C'est vraiment super interessant !</p>\n"
     "</body>\n"
     "</html>\n";

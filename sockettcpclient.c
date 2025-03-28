@@ -24,7 +24,7 @@ int main(int ac, char **av)
     int bytes_sent;
 
     if (ac != 2) {
-        printf("Usage: ./client \"Message to send\"");
+        printf("Usage: ./client \"Message to send\"\n");
         return (1);
     }
 
